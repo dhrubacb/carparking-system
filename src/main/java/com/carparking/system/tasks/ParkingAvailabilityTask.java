@@ -29,14 +29,17 @@ import java.util.stream.Collectors;
 public class ParkingAvailabilityTask {
     @Value("${carpark.request.retry}")
     private Integer requestRetryCount;
-//    @Value("${carpark.availability.url}")
-    private String carparkAvailabilityUrl= "https://api.data.gov.sg/v1/transport/carpark-availability";
+
+    @Value("${carpark.availability.url}")
+    private String carparkAvailabilityUrl;
     private final CarParkService carParkService;
     private final ParkingAvailService parkingAvailService;
+    private ObjectMapper objectMapper;
 
-    public ParkingAvailabilityTask(CarParkService carParkService, ParkingAvailService parkingAvailService) {
+    public ParkingAvailabilityTask(CarParkService carParkService, ParkingAvailService parkingAvailService, ObjectMapper objectMapper) {
         this.carParkService = carParkService;
         this.parkingAvailService = parkingAvailService;
+        this.objectMapper = objectMapper;
     }
 
     public void start() {
@@ -63,7 +66,7 @@ public class ParkingAvailabilityTask {
             return false;
         }
         String resp = EntityUtils.toString(response.getEntity());
-        CarParkRoot carParkRootObj = new ObjectMapper().readValue(resp, CarParkRoot.class);
+        CarParkRoot carParkRootObj = objectMapper.readValue(resp, CarParkRoot.class);
         CarParkItem carParkItem = carParkRootObj.getItems().get(0);
         if (carParkItem == null) {
             return false;
@@ -92,7 +95,7 @@ public class ParkingAvailabilityTask {
                 }).collect(Collectors.toList());
         parkingAvailService.saveAll(entities);
         return true;
-}
+    }
 
     private CarParkingAvailabilityEntity createParkingAvailEntity(CarParkProjection parkingInfo, Pair<Integer, Integer> value) {
         CarParkingAvailabilityEntity carAvailability = new CarParkingAvailabilityEntity();

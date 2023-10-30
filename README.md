@@ -8,4 +8,5 @@ mvn clean install
 mvn test
 # RUN
 docker-compose up
+
 java -jar target/carparking-system-0.0.1-SNAPSHOT.jar
